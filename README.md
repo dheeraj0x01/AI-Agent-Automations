@@ -1,4 +1,4 @@
-# AI-Agent-Automations 🚀
+# AI-Agent-Automations 
 
 A growing collection of powerful AI automations, workflows, and smart business systems built using:
 
