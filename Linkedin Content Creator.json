@@ -1,0 +1,304 @@
+{
+  "name": "Linkedin Content Creator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        80
+      ],
+      "id": "b16b5914-f457-4644-8ba1-d42a59aa42f1",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -96
+      ],
+      "id": "fcd89ea5-3589-42cd-ac72-94903d3b357f",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1umpxr8OugxkfHlwbDLASV88Ki_bRETNUtYKUyRMLdfM",
+          "mode": "list",
+          "cachedResultName": "ML_LinkedIn_Content_Planner",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1umpxr8OugxkfHlwbDLASV88Ki_bRETNUtYKUyRMLdfM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 282755977,
+          "mode": "list",
+          "cachedResultName": "ML Content Planner",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1umpxr8OugxkfHlwbDLASV88Ki_bRETNUtYKUyRMLdfM/edit#gid=282755977"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "To Do"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        32,
+        -96
+      ],
+      "id": "d77d8b33-cda5-423c-b4b0-7338e8ba4a0b",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1UceyGKpVn2SBGbC",
+          "name": "Google Sheets L.inpost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={\n  \"query\": \"{{$json.Topic.replace(/\\n/g, ' ')}}\",\n  \"search_depth\": \"advanced\",\n  \"chunks_per_source\": 3,\n  \"max_results\":3,\n  \"topic\": \"general\",\n  \"time_range\": null,\n  \"start_date\": \"2020-01-01\",\n  \"end_date\": \"2026-12-31\",\n  \"include_answer\": false,\n  \"include_raw_content\": false,\n  \"include_images\": false,\n  \"include_image_descriptions\": false,\n  \"include_favicon\": false,\n  \"include_domains\": [],\n  \"exclude_domains\": [],\n  \"country\": null,\n  \"auto_parameters\": false,\n  \"exact_match\": false,\n  \"include_usage\": false,\n  \"safe_search\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        288,
+        -96
+      ],
+      "id": "f5aa512f-cdca-4333-b777-c3dbc075530f",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Article 1: {{ $json.results[0] }}\nArticle 2: {{ $json.results[1] }}\nArticle 3: {{ $json.results[2] }}",
+        "options": {
+          "systemMessage": "=You are a professional LinkedIn content creator specializing in machine learning and technology topics.\n\nYou will be given 3 articles as input. Your task is to synthesize the information and create a single, concise, high-quality LinkedIn post.\n\nGuidelines:\n- Write in a clear, human, and professional tone.\n- Keep the post concise but insightful (not too long).\n- Start with a strong hook to capture attention.\n- Explain the concept in simple and understandable terms.\n- Combine key insights from all articles (do not repeat content).\n- Add a real-world perspective or practical relevance where possible.\n- Maintain an inspiring and engaging tone.\n- Avoid technical jargon unless necessary, and explain it simply.\n\nFormatting:\n- Use short paragraphs for readability.\n- Include 4–6 relevant hashtags at the end (e.g., #MachineLearning #AI #DataScience).\n- Use 2–4 appropriate emojis to enhance engagement (not excessive).\n- Ensure the post looks natural and not AI-generated.\n\nOutput:\n- Only return the final LinkedIn post.\n- Do not include explanations, headings, or metadata."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        496,
+        -96
+      ],
+      "id": "3f787b91-0642-42cd-9d25-8dc4d982b31d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        464,
+        208
+      ],
+      "id": "f44090eb-6857-4325-b60b-baa21dc8cba4",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ubg1KPbBpu1Ktpls",
+          "name": "for linkedin post"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1umpxr8OugxkfHlwbDLASV88Ki_bRETNUtYKUyRMLdfM",
+          "mode": "list",
+          "cachedResultName": "ML_LinkedIn_Content_Planner",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1umpxr8OugxkfHlwbDLASV88Ki_bRETNUtYKUyRMLdfM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 282755977,
+          "mode": "list",
+          "cachedResultName": "ML Content Planner",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1umpxr8OugxkfHlwbDLASV88Ki_bRETNUtYKUyRMLdfM/edit#gid=282755977"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Topic": "={{ $('Get row(s) in sheet').item.json.Topic }}",
+            "Status": "Created",
+            "Content": "={{ $('Get row(s) in sheet').item.json.Content }}"
+          },
+          "matchingColumns": [
+            "Topic"
+          ],
+          "schema": [
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        848,
+        -96
+      ],
+      "id": "e48068be-4a38-4488-8145-8268abcd3449",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1UceyGKpVn2SBGbC",
+          "name": "Google Sheets L.inpost"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1642c1b1-985e-408e-877f-d375bbf62d1b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3b196320eafd0762e2515006c8d90c46d108fdf042571c8f7fde3a03360b94ea"
+  },
+  "id": "1EeGgtUTcCyntWtc",
+  "tags": []
+}
